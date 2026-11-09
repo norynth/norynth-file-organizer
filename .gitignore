@@ -38,3 +38,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Extra safety net for any file mentioning "private-key" in its name
+*private-key*
