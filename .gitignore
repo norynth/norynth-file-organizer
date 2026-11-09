@@ -41,3 +41,8 @@ Thumbs.db
 
 # Extra safety net for any file mentioning "private-key" in its name
 *private-key*
+
+# Internal docs — live outside the repo at ~/norynth-products/file-organizer-docs/
+PROJECT_STATUS.md
+SKILL.md
+Note_on_*
