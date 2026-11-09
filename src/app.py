@@ -1,5 +1,5 @@
 """
-Norynth File Organizer Pro - application entry point.
+Norynth File Organizer - application entry point.
 
     python app.py                  # desktop app (pywebview + HTML UI)
     python app.py --cli --source X --dest Y [--dry-run] [...]   # scripted use

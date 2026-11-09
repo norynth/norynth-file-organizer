@@ -1,4 +1,4 @@
-# Norynth File Organizer Pro 2.0 (pywebview + HTML UI)
+# Norynth File Organizer 1.0 (pywebview + HTML UI)
 
 ## What is in this folder
 | File | Purpose |

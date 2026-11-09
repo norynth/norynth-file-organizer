@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build script for Norynth File Organizer Pro 2.x (pywebview + HTML UI).
+Build script for Norynth File Organizer 1.x (pywebview + HTML UI).
 
     py -m pip install -r requirements.txt
     py build_exe.py            # single-file exe

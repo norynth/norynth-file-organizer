@@ -1,19 +1,22 @@
 # Changelog
 
-## [1.0.0] — 2026-11-15
+All notable changes to Norynth File Organizer are documented here.
+
+## [1.0] — 2026-11-09
+
+First public release. Windows `.exe`, licensed per customer.
 
 ### Added
-- Automated file organization: 5 strategies (type, date, extracted-date, content, size)
-- Smart date detection from filenames (YYYY-MM-DD, DD-MM-YYYY, YYYYMMDD)
-- Keyword-based content classification for PDF, DOCX, images, text
-- Duplicate detection via MD5 hash
-- Full undo of last operation
-- 5 built-in rule presets (Invoices, Photos, Projects, Documents, Code)
-- Headless CLI mode for batch processing thousands of files
-- 100% local processing — no cloud, no uploads
-- **Per-customer Ed25519 license keys** (offline verification, no network call)
-- **License check at startup** — fails closed if no valid key
+
+- **pywebview desktop UI** — single offline HTML interface with sidebar navigation (Organize, Rules, Duplicates, History, Settings, About), dark/light theme, progress panel with Cancel, and per-file untick in the preview table
+- **Engine** — preview/move/copy, disk-backed undo across restarts, content-hash duplicate detection (including against the destination)
+- **Rules builder** — conditions on type, filename, regex, content text, size, age; folder templates like `Finance/{year}/{month}`
+- **5 built-in presets** — Invoices, Photos, Projects, Documents, Code
+- **Date detection** — common filename formats plus photo EXIF metadata
+- **Content classification** — reads PDFs (PyMuPDF), DOCX (python-docx), and plain text
+- **Per-customer Ed25519 license keys** — offline verification, no network call; license enforced on every operation
+- **PyInstaller one-file Windows build** — WebView2 required (included with Windows 11 and most Windows 10 systems; the app offers a download link if missing)
 
 ### Known limitations
-- Scanned PDFs (image-only) not OCR'd
-- License check is a speed bump, not copy protection (Python source can be decompiled)
+
+- Scanned PDFs (image-only) are not OCR'd

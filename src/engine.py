@@ -1,5 +1,5 @@
 """
-Norynth File Organizer Pro - engine.
+Norynth File Organizer - engine.
 
 All file logic lives here and has NO UI dependency, so the HTML app, the CLI and
 the tests all use the exact same code path:
@@ -28,8 +28,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
-APP_NAME = "Norynth File Organizer Pro"
-APP_VERSION = "2.0.0"
+APP_NAME = "Norynth File Organizer"
+APP_VERSION = "1.0"
 QUARANTINE_DIR = "_Duplicates"
 
 # --------------------------------------------------------------------------- #

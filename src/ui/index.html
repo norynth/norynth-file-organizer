@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<title>Norynth File Organizer Pro</title>
+<title>Norynth File Organizer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root{
@@ -279,7 +279,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 
       <!-- ABOUT -->
       <section class="page" id="page-about">
-        <div class="card"><h3>Norynth File Organizer Pro</h3><div class="sub">Professional local file organization.</div>
+        <div class="card"><h3>Norynth File Organizer</h3><div class="sub">Professional local file organization.</div>
           <div class="kv" id="about-kv"></div></div>
       </section>
     </div>
@@ -711,7 +711,7 @@ function mockApi() {   // lets the UI be previewed in a normal browser
   }, 100);
   const items = [["IMG_20240315.jpg", "Images/20240315_IMG.jpg", "ready", 2400000], ["report final.pdf", "Documents/20260101_report_final.pdf", "ready", 810000], ["copy of report.pdf", "", "duplicate", 810000], ["notes.txt", "Documents/20260101_notes.txt", "ready", 1200]].map((x, i) => ({ id: i, src: "C:\\Downloads\\" + x[0], src_name: x[0], rel: x[1], rule: "Strategy: type", note: x[2] === "duplicate" ? "Identical to report final.pdf" : "", status: x[2], size: x[3], dest: "" }));
   return {
-    bootstrap: () => ok({ app: "Norynth File Organizer Pro", version: "2.0.0", license: { valid: true, order: "DEMO-001", reason: "" }, settings: { enable_content_extraction: true, enable_exif_dates: true, enable_filename_dates: true, max_content_scan_kb: 512, theme: "dark", last_options: {} }, rules: [{ id: "a", name: "Invoices", enabled: true, ext: "pdf", name_contains: "invoice", dest: "Finance/{year}/{month}" }], presets: [{ name: "Photos by Date", description: "Organize photos using EXIF date" }], deps: [{ name: "PyMuPDF", ok: true }, { name: "piexif", ok: false, error: "No module named piexif" }], data_dir: "C:\\Users\\demo\\AppData\\Roaming\\Norynth", support: "support@norynth.com" }),
+    bootstrap: () => ok({ app: "Norynth File Organizer", version: "1.0", license: { valid: true, order: "DEMO-001", reason: "" }, settings: { enable_content_extraction: true, enable_exif_dates: true, enable_filename_dates: true, max_content_scan_kb: 512, theme: "dark", last_options: {} }, rules: [{ id: "a", name: "Invoices", enabled: true, ext: "pdf", name_contains: "invoice", dest: "Finance/{year}/{month}" }], presets: [{ name: "Photos by Date", description: "Organize photos using EXIF date" }], deps: [{ name: "PyMuPDF", ok: true }, { name: "piexif", ok: false, error: "No module named piexif" }], data_dir: "C:\\Users\\demo\\AppData\\Roaming\\Norynth", support: "support@norynth.com" }),
     save_settings: s => ok(s), save_rules: r => ok(r), pick_folder: () => ok("C:\\Users\\demo\\Downloads"), resolve_folder: p => ok(p), open_path: () => ok(null), open_data_dir: () => ok(null),
     start_plan: () => { later("plan", { id: "p1", items, truncated: false, summary: { total: 4, ready: 3, duplicate: 1, inplace: 0, error: 0, size_ready: 3211200 }, options: {} }); return ok(null).then(() => ({ ok: true })); },
     start_execute: () => { later("execute", { id: "r1", status: "completed", done: 3, errors: 0, skipped: 1, mode: "move", dest: "D:\\Sorted", error_sample: [] }); return Promise.resolve({ ok: true }); },
