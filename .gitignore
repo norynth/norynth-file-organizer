@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.exe
+*.spec
+*.bak
+release/
+*.zip
+
+# Generated config / history
+organizer_config.json
+rename_history.jsonl
+norynth_license_error.txt
+
+# Secrets — NEVER commit
+*.key
+*.b64
+.secrets/
+license.key
+generate_customer_key.py
+generate_keypair.py
+Note_on_*
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

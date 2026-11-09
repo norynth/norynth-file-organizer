@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>Norynth File Organizer Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#0b0e14; --panel:#121722; --panel2:#171d2b; --line:#232b3d; --text:#e6e9f2; --muted:#8a93a8;
+  --accent:#6c8cff; --accent2:#9a6bff; --ok:#3ecf8e; --warn:#f5a524; --err:#ef5b5b;
+  --shadow:0 10px 30px rgba(0,0,0,.35); --radius:14px; --hover:rgba(255,255,255,.05);
+  --font:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#f3f5fa; --panel:#ffffff; --panel2:#f7f9fd; --line:#e2e7f1; --text:#1a2133; --muted:#667189;
+  --shadow:0 10px 30px rgba(30,45,90,.12); --hover:rgba(20,40,100,.06);
+}
+*{box-sizing:border-box} html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.45 var(--font);overflow:hidden;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:100vh}
+
+/* sidebar */
+.sidebar{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px;min-height:0;overflow-y:auto}
+.brand{display:flex;gap:12px;align-items:center;padding:4px 8px 22px}
+.brand b{display:block;font-size:15px;letter-spacing:.2px}.brand span{font-size:11.5px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:12px;padding:10px 12px;border:0;background:none;border-radius:10px;color:var(--muted);cursor:pointer;text-align:left;position:relative}
+.nav button:hover{background:var(--hover);color:var(--text)}
+.nav button.active{background:linear-gradient(135deg,rgba(108,140,255,.18),rgba(154,107,255,.14));color:var(--text)}
+.nav button.active::before{content:"";position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:3px;background:linear-gradient(var(--accent),var(--accent2))}
+.nav .badge{margin-left:auto;font-size:11px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;padding:1px 8px;color:var(--muted)}
+.grow{flex:1}
+.lic{border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--muted)}
+.lic b{color:var(--text);display:flex;align-items:center;gap:6px;font-size:12.5px;margin-bottom:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}.dot.bad{background:var(--err)}
+
+/* main */
+main{display:flex;flex-direction:column;min-width:0;min-height:0;height:100%}
+.topbar{display:flex;align-items:center;gap:14px;padding:18px 30px 6px}
+.topbar h1{margin:0;font-size:22px;font-weight:650;letter-spacing:.2px}.topbar p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 30px 40px}
+.page{display:none;max-width:1120px;margin:0 auto;animation:fade .18s ease}.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.iconbtn{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.iconbtn:hover{color:var(--text);background:var(--panel2)}
+
+/* cards & controls */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-top:16px}
+.card h3{margin:0 0 4px;font-size:14.5px}.card .sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.pick{display:flex;gap:8px}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,140,255,.18)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel2);padding:9px 16px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--hover);border-color:#3a4766}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#fff;font-weight:600;box-shadow:0 6px 18px rgba(108,140,255,.35)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--err)}.btn.sm{padding:6px 11px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.dropzone.drag{outline:2px dashed var(--accent);outline-offset:4px}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.tile{border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:6px;text-align:left}
+.tile:hover{border-color:#3a4766}.tile.sel{border-color:var(--accent);background:linear-gradient(135deg,rgba(108,140,255,.14),rgba(154,107,255,.10))}
+.tile b{font-size:13px}.tile span{font-size:11.5px;color:var(--muted);line-height:1.3}.tile .ic{color:var(--accent)}
+.switches{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}
+.sw{display:flex;align-items:center;gap:12px;padding:8px 0;cursor:pointer;user-select:none}
+.sw input{display:none}
+.sw i{width:38px;height:22px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:.15s}
+.sw i::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+.sw input:checked+i{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.sw input:checked+i::after{left:19px}
+.sw small{display:block;color:var(--muted);font-size:11.5px}
+.actions{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:12.5px}
+
+/* results table */
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:120px}
+.chip b{display:block;font-size:19px}.chip span{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.tools{display:flex;gap:10px;margin-bottom:10px}.tools input{max-width:320px}.tools select{max-width:200px}
+.tablewrap{border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:420px}
+table{border-collapse:collapse;width:100%}
+th{position:sticky;top:0;background:var(--panel2);text-align:left;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:9px 12px;z-index:1}
+td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:top;font-size:13px}
+td.path{word-break:break-all;max-width:360px}td .arrow{color:var(--accent);margin-right:6px}
+td small{display:block;color:var(--muted);font-size:11.5px}
+tr:hover td{background:var(--hover)}
+.tag{font-size:11px;padding:2px 9px;border-radius:99px;border:1px solid;white-space:nowrap}
+.tag.ready{color:var(--ok);border-color:rgba(62,207,142,.4);background:rgba(62,207,142,.08)}
+.tag.duplicate{color:var(--warn);border-color:rgba(245,165,36,.4);background:rgba(245,165,36,.08)}
+.tag.inplace{color:var(--muted);border-color:var(--line)}.tag.error,.tag.failed{color:var(--err);border-color:rgba(239,91,91,.4);background:rgba(239,91,91,.08)}
+.tag.completed{color:var(--ok);border-color:rgba(62,207,142,.4)}.tag.undone{color:var(--muted);border-color:var(--line)}
+.tag.cancelled,.tag.interrupted{color:var(--warn);border-color:rgba(245,165,36,.4)}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.empty{text-align:center;padding:34px 10px;color:var(--muted)}.empty .ic{width:34px;height:34px;opacity:.6;margin-bottom:8px}
+
+/* rules */
+.rule{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);margin-top:10px}
+.rule .meta{flex:1;min-width:0}.rule b{font-size:14px}
+.rule .conds{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px}
+.cond{font-size:11.5px;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:2px 9px;color:var(--muted)}
+.rule .to{font-size:12.5px;color:var(--accent)}
+.rule.off{opacity:.55}.rbtns{display:flex;gap:6px}
+.tokens{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.tokens button{font-family:Consolas,monospace;font-size:11.5px;border:1px solid var(--line);background:var(--panel2);color:var(--accent);border-radius:8px;padding:3px 8px;cursor:pointer}
+.example{margin-top:8px;font-size:12.5px;color:var(--muted)}.example code{color:var(--ok)}
+
+/* duplicates */
+.group{border:1px solid var(--line);border-radius:12px;margin-top:10px;overflow:hidden}
+.group header{display:flex;gap:12px;align-items:center;padding:10px 14px;background:var(--panel2);font-size:13px}.group header span{color:var(--muted)}
+.frow{display:flex;gap:12px;align-items:center;padding:8px 14px;border-top:1px solid var(--line);font-size:12.5px}
+.frow .p{flex:1;word-break:break-all}.frow .d{color:var(--muted);white-space:nowrap}
+.flist{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.fitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);word-break:break-all}.fitem .grow{flex:1}
+.sticky{position:sticky;bottom:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:14px;display:flex;gap:12px;align-items:center;box-shadow:var(--shadow)}
+
+/* settings / about */
+.depgrid{display:grid;gap:8px}.dep{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+.dep small{color:var(--muted);display:block;word-break:break-word}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 16px;font-size:13.5px}.kv span{color:var(--muted)}
+
+/* tray, toast, modal */
+.tray{position:fixed;right:24px;bottom:24px;width:360px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);display:none;z-index:50}
+.tray.show{display:block;animation:fade .2s}
+.tray .row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;font-weight:600}.tray small{color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:8px}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .15s}
+.bar.ind i{width:35%;animation:slide 1.1s infinite ease-in-out}@keyframes slide{0%{margin-left:-35%}100%{margin-left:100%}}
+.toasts{position:fixed;top:18px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:100}
+.toast{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);padding:10px 14px;border-radius:10px;box-shadow:var(--shadow);max-width:380px;animation:fade .2s}
+.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+.overlay{position:fixed;inset:0;background:rgba(5,8,14,.6);display:grid;place-items:center;z-index:80;backdrop-filter:blur(3px)}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(640px,92vw);max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal header{padding:18px 22px 6px;font-size:17px;font-weight:650}.modal .body{padding:8px 22px;overflow:auto}
+.modal footer{padding:14px 22px 18px;display:flex;justify-content:flex-end;gap:10px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form .full{grid-column:1/-1}
+.form .field label{text-transform:none;font-size:12px;letter-spacing:0}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}::-webkit-scrollbar-thumb:hover{background:#3a4766}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c8cff"/><stop offset="1" stop-color="#9a6bff"/></linearGradient>
+<symbol id="i-organize" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+<symbol id="i-rules" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></symbol>
+<symbol id="i-dups" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></symbol>
+<symbol id="i-scale" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+</defs></svg>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 40 40"><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M12 29V11l16 18V11" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><b>Norynth</b><span>File Organizer Pro</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-page="organize" class="active"><svg class="ic"><use href="#i-organize"/></svg>Organize</button>
+      <button data-page="rules"><svg class="ic"><use href="#i-rules"/></svg>Rules<span class="badge" id="b-rules">0</span></button>
+      <button data-page="dups"><svg class="ic"><use href="#i-dups"/></svg>Duplicates</button>
+      <button data-page="history"><svg class="ic"><use href="#i-history"/></svg>History<span class="badge" id="b-hist">0</span></button>
+      <button data-page="settings"><svg class="ic"><use href="#i-settings"/></svg>Settings</button>
+      <button data-page="about"><svg class="ic"><use href="#i-info"/></svg>About</button>
+    </nav>
+    <div class="grow"></div>
+    <div class="lic"><b><i class="dot" id="lic-dot"></i><span id="lic-title">Licensed</span></b><span id="lic-sub"></span></div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="grow"><h1 id="title">Organize</h1><p id="subtitle"></p></div>
+      <button class="iconbtn" id="theme" title="Toggle theme"><svg class="ic"><use href="#i-sun"/></svg></button>
+    </div>
+    <div class="content">
+
+      <!-- ORGANIZE -->
+      <section class="page active" id="page-organize">
+        <div class="card dropzone" id="card-folders">
+          <h3>Folders</h3><div class="sub">Pick where your files are now and where they should end up. You can also drop a folder here.</div>
+          <div class="grid2">
+            <div class="field dropzone" data-drop="source"><label>Source folder</label>
+              <div class="pick"><input type="text" id="src" placeholder="Choose the folder to organize"><button class="btn" id="b-src"><svg class="ic"><use href="#i-folder"/></svg>Browse</button></div></div>
+            <div class="field dropzone" data-drop="dest"><label>Destination folder</label>
+              <div class="pick"><input type="text" id="dst" placeholder="Where organized files go"><button class="btn" id="b-dst"><svg class="ic"><use href="#i-folder"/></svg>Browse</button></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>How should files be sorted?</h3><div class="sub">Your custom rules (if any) are checked first, then this method.</div>
+          <div class="tiles" id="tiles"></div>
+          <div class="grid2" style="margin-top:16px">
+            <div class="field"><label>Preset (optional)</label><select id="preset"></select></div>
+            <div class="field"><label>&nbsp;</label><div class="hint" id="preset-desc" style="padding:10px 0"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Options</h3>
+          <div class="switches">
+            <label class="sw"><input type="checkbox" id="o-rules"><i></i><span>Apply my custom rules first<small id="o-rules-sub"></small></span></label>
+            <label class="sw"><input type="checkbox" id="o-rename"><i></i><span>Smart rename<small>Date prefix and clean file names</small></span></label>
+            <label class="sw"><input type="checkbox" id="o-copy"><i></i><span>Copy instead of move<small>Originals stay where they are</small></span></label>
+            <label class="sw"><input type="checkbox" id="o-dupes"><i></i><span>Skip duplicates<small>Identical files are left alone</small></span></label>
+            <label class="sw"><input type="checkbox" id="o-recursive"><i></i><span>Include subfolders<small>Scan everything below the source</small></span></label>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="b-preview"><svg class="ic"><use href="#i-eye"/></svg>Preview changes</button>
+            <span class="hint">Nothing is touched until you apply the preview. Every run can be undone from History.</span>
+          </div>
+        </div>
+        <div id="plan-area"></div>
+        <div id="result-area"></div>
+      </section>
+
+      <!-- RULES -->
+      <section class="page" id="page-rules">
+        <div class="card">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="grow"><h3>Custom rules</h3><div class="sub" style="margin:0">Rules run top to bottom and the first match decides the folder. A file that matches no rule falls back to the sorting method.</div></div>
+            <button class="btn primary" id="b-newrule"><svg class="ic"><use href="#i-plus"/></svg>New rule</button>
+          </div>
+          <div id="rules-list"></div>
+        </div>
+      </section>
+
+      <!-- DUPLICATES -->
+      <section class="page" id="page-dups">
+        <div class="card">
+          <h3>Find duplicate files</h3><div class="sub">Files are compared by content, not by name. Extras are moved to a quarantine folder, never deleted, and the move can be undone.</div>
+          <div class="flist" id="dup-folders"></div>
+          <div class="actions" style="margin-top:0">
+            <button class="btn" id="b-dupadd"><svg class="ic"><use href="#i-plus"/></svg>Add folder</button>
+            <label class="sw" style="padding:0"><input type="checkbox" id="dup-rec" checked><i></i><span>Include subfolders</span></label>
+            <div class="grow"></div>
+            <button class="btn primary" id="b-dupscan"><svg class="ic"><use href="#i-dups"/></svg>Scan for duplicates</button>
+          </div>
+        </div>
+        <div id="dup-results"></div>
+      </section>
+
+      <!-- HISTORY -->
+      <section class="page" id="page-history">
+        <div class="card"><h3>Run history</h3><div class="sub">Every organize and duplicate cleanup is recorded here so you can undo it, even after restarting the app.</div>
+          <div id="history-list"></div></div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="page" id="page-settings">
+        <div class="card"><h3>Content analysis</h3><div class="sub">Everything runs locally on your computer. No file ever leaves it.</div>
+          <div class="switches">
+            <label class="sw"><input type="checkbox" id="s-content"><i></i><span>Read inside PDF, DOCX and text files<small>Used by Smart content sorting and smart rename</small></span></label>
+            <label class="sw"><input type="checkbox" id="s-exif"><i></i><span>Use photo EXIF dates<small>Date taken from JPEG/TIFF metadata</small></span></label>
+            <label class="sw"><input type="checkbox" id="s-fname"><i></i><span>Detect dates in file names<small>Like 2024-03-15 or 20240315</small></span></label>
+          </div>
+          <div class="grid2" style="margin-top:12px"><div class="field"><label>Max text to read per file (KB)</label><input type="number" id="s-maxkb" min="16" max="8192" step="16"></div></div>
+        </div>
+        <div class="card"><h3>Components</h3><div class="sub">Optional features that need extra libraries bundled with the app.</div><div class="depgrid" id="deps"></div></div>
+        <div class="card"><h3>Data</h3><div class="sub" id="datadir"></div><button class="btn" id="b-datadir"><svg class="ic"><use href="#i-folder"/></svg>Open data folder</button></div>
+      </section>
+
+      <!-- ABOUT -->
+      <section class="page" id="page-about">
+        <div class="card"><h3>Norynth File Organizer Pro</h3><div class="sub">Professional local file organization.</div>
+          <div class="kv" id="about-kv"></div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="tray" id="tray"><div class="row"><span id="tray-title">Working…</span><button class="btn sm" id="tray-cancel">Cancel</button></div>
+  <div class="bar ind" id="tray-bar"><i></i></div><small id="tray-msg"></small></div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtSize = n => { for (const u of ["B", "KB", "MB", "GB", "TB"]) { if (n < 1024) return (u === "B" ? n.toFixed(0) : n.toFixed(1)) + " " + u; n /= 1024; } return n.toFixed(1) + " PB"; };
+const fmtDate = ts => new Date(ts * 1000).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+const ico = (n, cls = "") => `<svg class="ic ${cls}"><use href="#i-${n}"/></svg>`;
+const base = p => String(p).split(/[\\/]/).pop();
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+
+function toast(msg, kind = "") {
+  const el = document.createElement("div"); el.className = "toast " + kind; el.textContent = msg;
+  $("#toasts").appendChild(el); setTimeout(() => el.remove(), kind === "err" ? 7000 : 4000);
+}
+function modal({ title, html, buttons }) {
+  const ov = document.createElement("div"); ov.className = "overlay";
+  ov.innerHTML = `<div class="modal"><header>${esc(title)}</header><div class="body">${html}</div><footer></footer></div>`;
+  const close = () => ov.remove();
+  buttons.forEach(b => {
+    const btn = document.createElement("button"); btn.className = "btn " + (b.cls || ""); btn.textContent = b.label;
+    btn.onclick = () => { if (!b.onClick || b.onClick(ov) !== false) close(); };
+    $("footer", ov).appendChild(btn);
+  });
+  ov.addEventListener("mousedown", e => { if (e.target === ov) close(); });
+  document.body.appendChild(ov); return ov;
+}
+const confirmBox = (title, text, label = "Confirm", cls = "primary") => new Promise(res => modal({
+  title, html: `<p style="margin:6px 0 10px;line-height:1.5">${text}</p>`,
+  buttons: [{ label: "Cancel", onClick: () => { res(false); } }, { label, cls, onClick: () => { res(true); } }]
+}));
+
+/* ---------- state ---------- */
+const state = {
+  page: "organize", boot: null, settings: {}, rules: [], presets: [],
+  opts: { source: "", dest: "", strategy: "type", preset: "", use_rules: true, recursive: false, copy_mode: false, smart_rename: true, skip_duplicates: true },
+  plan: null, excluded: new Set(), filterText: "", filterStatus: "all", shown: 200,
+  dupFolders: [], dupGroups: null, dupKeep: new Map(), history: [], dropZone: null
+};
+let api = null;
+
+/* ---------- events from Python ---------- */
+const NOR = { on: {}, emit(kind, p) { (NOR.on[kind] || []).forEach(h => h(p)); }, sub(kind, h) { (NOR.on[kind] = NOR.on[kind] || []).push(h); } };
+window.NOR = NOR;
+
+/* ---------- navigation ---------- */
+const TITLES = {
+  organize: ["Organize", "Sort a folder into a clean structure in three steps"],
+  rules: ["Rules", "Teach the app exactly where your files belong"],
+  dups: ["Duplicates", "Reclaim space from identical files"],
+  history: ["History", "Review and undo anything the app has done"],
+  settings: ["Settings", "Preferences and component status"],
+  about: ["About", "Version and license"]
+};
+function go(page) {
+  state.page = page;
+  $$(".page").forEach(p => p.classList.toggle("active", p.id === "page-" + page));
+  $$("#nav button").forEach(b => b.classList.toggle("active", b.dataset.page === page));
+  $("#title").textContent = TITLES[page][0]; $("#subtitle").textContent = TITLES[page][1];
+  if (page === "history") loadHistory();
+  if (page === "rules") renderRules();
+  if (page === "dups") renderDupFolders();
+  if (page === "settings") renderSettings();
+  if (page === "about") renderAbout();
+}
+$("#nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b) go(b.dataset.page); });
+
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  $("#theme").innerHTML = ico(t === "dark" ? "sun" : "moon");
+}
+$("#theme").onclick = () => {
+  const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(t); state.settings.theme = t; api.save_settings({ theme: t });
+};
+
+/* ---------- job tray ---------- */
+const JOB_TITLES = { plan: "Analysing files", execute: "Organizing files", undo: "Restoring files", dups: "Looking for duplicates", quarantine: "Moving duplicates" };
+function showTray(job) { $("#tray-title").textContent = JOB_TITLES[job] || "Working"; $("#tray-msg").textContent = ""; $("#tray-bar").className = "bar ind"; $("#tray-bar i").style.width = ""; $("#tray").classList.add("show"); }
+NOR.sub("progress", p => {
+  $("#tray").classList.add("show"); $("#tray-title").textContent = JOB_TITLES[p.job] || "Working";
+  $("#tray-msg").textContent = p.message || "";
+  const bar = $("#tray-bar");
+  if (p.total > 0) { bar.classList.remove("ind"); $("i", bar).style.width = Math.min(100, p.done / p.total * 100) + "%"; }
+  else { bar.classList.add("ind"); $("i", bar).style.width = ""; }
+});
+$("#tray-cancel").onclick = () => api.cancel_job();
+
+async function startJob(job, call) {
+  const r = await call();
+  if (!r.ok) { toast(r.error, "err"); return false; }
+  showTray(job); return true;
+}
+NOR.sub("done", d => {
+  $("#tray").classList.remove("show");
+  if (!d.ok) { toast(d.cancelled ? "Cancelled" : d.error, d.cancelled ? "warn" : "err"); if (d.job === "execute" || d.job === "undo") refreshBadges(); return; }
+  if (d.job === "plan") onPlanReady(d.result);
+  else if (d.job === "execute") onExecuted(d.result);
+  else if (d.job === "undo") {
+    const r = d.result;
+    toast(r.complete ? `Restored ${r.restored + r.removed} file(s)` : `Undo incomplete: ${r.failed} failed, ${r.missing} missing`, r.complete ? "ok" : "warn");
+    loadHistory(); refreshBadges();
+  }
+  else if (d.job === "dups") { state.dupGroups = d.result; initKeep(); renderDupResults(); }
+  else if (d.job === "quarantine") {
+    toast(`Moved ${d.result.done} file(s) to quarantine` + (d.result.errors ? `, ${d.result.errors} failed` : ""), d.result.errors ? "warn" : "ok");
+    refreshBadges(); scanDups();
+  }
+});
+
+/* ---------- ORGANIZE page ---------- */
+const STRATEGIES = [
+  ["type", "organize", "By file type", "Images, Documents, Videos and more"],
+  ["date", "calendar", "By modified date", "Year and month the file changed"],
+  ["extracted-date", "calendar", "By detected date", "Date from name or photo EXIF"],
+  ["content", "spark", "Smart content", "Looks inside files and names"],
+  ["size", "scale", "By size", "Small, Medium, Large"]
+];
+function buildTiles() {
+  $("#tiles").innerHTML = STRATEGIES.map(([v, i, t, d]) => `<button class="tile" data-v="${v}">${ico(i)}<b>${t}</b><span>${d}</span></button>`).join("");
+  $("#tiles").onclick = e => { const t = e.target.closest(".tile"); if (t) { state.opts.strategy = t.dataset.v; syncOpts(); saveOpts(); } };
+}
+function buildPresets() {
+  $("#preset").innerHTML = `<option value="">None</option>` + state.presets.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("");
+}
+function syncOpts() {
+  const o = state.opts;
+  $("#src").value = o.source; $("#dst").value = o.dest;
+  $$(".tile").forEach(t => t.classList.toggle("sel", t.dataset.v === o.strategy));
+  $("#preset").value = o.preset;
+  const p = state.presets.find(x => x.name === o.preset);
+  $("#preset-desc").textContent = p ? p.description : "Presets add ready-made folder layouts such as Photos by Date.";
+  $("#o-rules").checked = o.use_rules; $("#o-rename").checked = o.smart_rename; $("#o-copy").checked = o.copy_mode;
+  $("#o-dupes").checked = o.skip_duplicates; $("#o-recursive").checked = o.recursive;
+  const active = state.rules.filter(r => r.enabled).length;
+  $("#o-rules-sub").textContent = active ? `${active} active rule${active > 1 ? "s" : ""}` : "No rules yet. Create some on the Rules page";
+}
+function readOpts() {
+  const o = state.opts;
+  o.source = $("#src").value.trim(); o.dest = $("#dst").value.trim(); o.preset = $("#preset").value;
+  o.use_rules = $("#o-rules").checked; o.smart_rename = $("#o-rename").checked; o.copy_mode = $("#o-copy").checked;
+  o.skip_duplicates = $("#o-dupes").checked; o.recursive = $("#o-recursive").checked;
+}
+const saveOpts = debounce(() => { readOpts(); api.save_settings({ last_options: state.opts }); }, 500);
+["#src", "#dst", "#preset", "#o-rules", "#o-rename", "#o-copy", "#o-dupes", "#o-recursive"].forEach(s => $(s).addEventListener("change", () => { readOpts(); syncOpts(); saveOpts(); }));
+$("#b-src").onclick = async () => { const r = await api.pick_folder("Choose source folder"); if (r.ok && r.data) { $("#src").value = r.data; readOpts(); saveOpts(); } };
+$("#b-dst").onclick = async () => { const r = await api.pick_folder("Choose destination folder"); if (r.ok && r.data) { $("#dst").value = r.data; readOpts(); saveOpts(); } };
+
+$("#b-preview").onclick = async () => {
+  readOpts();
+  if (!state.opts.source) return toast("Choose a source folder first", "warn");
+  if (!state.opts.dest) return toast("Choose a destination folder", "warn");
+  state.plan = null; $("#plan-area").innerHTML = ""; $("#result-area").innerHTML = "";
+  await startJob("plan", () => api.start_plan(state.opts));
+};
+
+function onPlanReady(plan) {
+  state.plan = plan; state.excluded = new Set(); state.filterText = ""; state.filterStatus = "all"; state.shown = 200;
+  const s = plan.summary;
+  if (!s.total) { $("#plan-area").innerHTML = `<div class="card empty">${ico("file")}<div>No files found in the source folder.</div></div>`; return; }
+  $("#plan-area").innerHTML = `
+  <div class="card">
+    <h3>Preview</h3><div class="sub">Review what will happen. Untick any file you want to leave out.</div>
+    <div class="chips">
+      <div class="chip"><b>${s.ready}</b><span>Ready</span></div>
+      <div class="chip"><b>${s.duplicate}</b><span>Duplicates skipped</span></div>
+      <div class="chip"><b>${s.inplace}</b><span>Already in place</span></div>
+      <div class="chip"><b>${s.error}</b><span>Problems</span></div>
+      <div class="chip"><b>${fmtSize(s.size_ready)}</b><span>To ${state.opts.copy_mode ? "copy" : "move"}</span></div>
+    </div>
+    ${plan.truncated ? `<div class="hint" style="margin-bottom:10px">Showing the first ${plan.items.length} rows. All ${s.total} files will be processed.</div>` : ""}
+    <div class="tools"><input type="text" id="f-text" placeholder="Filter by name or folder…">
+      <select id="f-status"><option value="all">All files</option><option value="ready">Ready</option><option value="duplicate">Duplicates</option><option value="inplace">Already in place</option><option value="error">Problems</option></select></div>
+    <div class="tablewrap"><table><thead><tr><th style="width:34px"><input type="checkbox" id="f-all" checked title="Select all"></th><th>File</th><th>Destination</th><th>Size</th><th>Status</th></tr></thead><tbody id="plan-rows"></tbody></table></div>
+    <div id="more"></div>
+    <div class="actions"><button class="btn primary" id="b-apply">${ico("check")}<span id="apply-label"></span></button>
+      <button class="btn" id="b-discard">Discard preview</button></div>
+  </div>`;
+  $("#f-text").oninput = e => { state.filterText = e.target.value.toLowerCase(); state.shown = 200; renderRows(); };
+  $("#f-status").onchange = e => { state.filterStatus = e.target.value; state.shown = 200; renderRows(); };
+  $("#f-all").onchange = e => { filtered().forEach(i => { if (i.status === "ready") e.target.checked ? state.excluded.delete(i.id) : state.excluded.add(i.id); }); renderRows(); };
+  $("#b-discard").onclick = () => { state.plan = null; $("#plan-area").innerHTML = ""; };
+  $("#b-apply").onclick = applyPlan;
+  renderRows();
+}
+const filtered = () => state.plan.items.filter(i =>
+  (state.filterStatus === "all" || i.status === state.filterStatus) &&
+  (!state.filterText || (i.src_name + " " + i.rel + " " + i.src).toLowerCase().includes(state.filterText)));
+function renderRows() {
+  const items = filtered(), page = items.slice(0, state.shown), tb = $("#plan-rows");
+  tb.innerHTML = page.map(i => `<tr>
+    <td>${i.status === "ready" ? `<input type="checkbox" data-id="${i.id}" ${state.excluded.has(i.id) ? "" : "checked"}>` : ""}</td>
+    <td class="path">${esc(i.src_name)}<small>${esc(i.src)}</small></td>
+    <td class="path">${i.rel ? `<span class="arrow">→</span>${esc(i.rel)}<small>${esc(i.rule)}${i.note ? " · " + esc(i.note) : ""}</small>` : `<small>${esc(i.note)}</small>`}</td>
+    <td>${fmtSize(i.size)}</td>
+    <td><span class="tag ${i.status}">${{ ready: "Ready", duplicate: "Duplicate", inplace: "In place", error: "Problem" }[i.status]}</span></td></tr>`).join("")
+    || `<tr><td colspan="5"><div class="empty">Nothing matches the filter.</div></td></tr>`;
+  $$("input[data-id]", tb).forEach(cb => cb.onchange = () => { const id = +cb.dataset.id; cb.checked ? state.excluded.delete(id) : state.excluded.add(id); updateApply(); });
+  $("#more").innerHTML = items.length > state.shown ? `<div style="text-align:center;margin-top:10px"><button class="btn sm" id="b-more">Show ${Math.min(200, items.length - state.shown)} more (${items.length - state.shown} hidden)</button></div>` : "";
+  if ($("#b-more")) $("#b-more").onclick = () => { state.shown += 200; renderRows(); };
+  updateApply();
+}
+function updateApply() {
+  const n = state.plan.summary.ready - state.excluded.size, verb = state.opts.copy_mode ? "Copy" : "Move";
+  $("#apply-label").textContent = n > 0 ? `${verb} ${n} file${n === 1 ? "" : "s"}` : "Nothing to do";
+  $("#b-apply").disabled = n <= 0;
+}
+async function applyPlan() {
+  const n = state.plan.summary.ready - state.excluded.size;
+  if (!await confirmBox("Apply changes?", `${state.opts.copy_mode ? "Copy" : "Move"} <b>${n}</b> file(s) to <b>${esc(state.opts.dest)}</b>?<br>You can undo this from the History page.`, "Apply")) return;
+  await startJob("execute", () => api.start_execute(state.plan.id, [...state.excluded]));
+}
+function onExecuted(run) {
+  state.plan = null; $("#plan-area").innerHTML = "";
+  const ok = run.errors === 0 && run.status === "completed";
+  $("#result-area").innerHTML = `<div class="card">
+    <h3>${ok ? "All done" : run.status === "cancelled" ? "Stopped early" : "Finished with problems"}</h3>
+    <div class="sub">${run.done} file(s) ${run.mode === "copy" ? "copied" : "moved"}${run.errors ? `, ${run.errors} failed` : ""}${run.skipped ? `, ${run.skipped} left alone` : ""}.</div>
+    ${run.error_sample && run.error_sample.length ? `<div class="hint" style="margin-bottom:10px">${run.error_sample.slice(0, 5).map(esc).join("<br>")}</div>` : ""}
+    <div class="actions" style="margin-top:0"><button class="btn primary" id="r-open">${ico("folder")}Open destination</button>
+      <button class="btn" id="r-undo">${ico("undo")}Undo this run</button><button class="btn" id="r-hist">View history</button></div></div>`;
+  $("#r-open").onclick = () => api.open_path(run.dest);
+  $("#r-hist").onclick = () => go("history");
+  $("#r-undo").onclick = async () => { if (await confirmBox("Undo this run?", "Files will be put back where they were.", "Undo")) { $("#result-area").innerHTML = ""; startJob("undo", () => api.start_undo(run.id)); } };
+  refreshBadges();
+}
+
+/* ---------- RULES page ---------- */
+const TOKENS = ["year", "month", "month_name", "day", "type", "ext", "name", "size_class", "language", "project_name"];
+const SAMPLE = { year: "2025", month: "03", month_name: "March", day: "14", type: "Images", ext: "jpg", name: "Holiday_Photo", size_class: "Medium (100KB-10MB)", language: "Python", project_name: "Apollo" };
+const saveRules = () => api.save_rules(state.rules).then(r => { if (r.ok) state.rules = r.data; refreshBadges(); syncOpts(); });
+function condChips(r) {
+  const c = [];
+  if (r.ext) c.push("type: " + r.ext); if (r.name_contains) c.push("name has: " + r.name_contains);
+  if (r.name_regex) c.push("regex: " + r.name_regex); if (r.content_contains) c.push("content has: " + r.content_contains);
+  if (r.min_mb !== "" && r.min_mb != null) c.push("≥ " + r.min_mb + " MB"); if (r.max_mb !== "" && r.max_mb != null) c.push("≤ " + r.max_mb + " MB");
+  if (r.older_days !== "" && r.older_days != null) c.push("older than " + r.older_days + " d"); if (r.newer_days !== "" && r.newer_days != null) c.push("newer than " + r.newer_days + " d");
+  return c.map(x => `<span class="cond">${esc(x)}</span>`).join("");
+}
+function renderRules() {
+  const el = $("#rules-list");
+  if (!state.rules.length) { el.innerHTML = `<div class="empty">${ico("rules")}<div><b>No rules yet</b></div><div>Example: <i>PDF files with “invoice” in the name</i> → <code>Finance/{year}/{month}</code></div></div>`; return; }
+  el.innerHTML = state.rules.map((r, i) => `<div class="rule ${r.enabled ? "" : "off"}" data-i="${i}">
+    <label class="sw" style="padding:0"><input type="checkbox" data-act="toggle" ${r.enabled ? "checked" : ""}><i></i></label>
+    <div class="meta"><b>${esc(r.name)}</b><div class="conds">${condChips(r)}</div><div class="to">→ ${esc(r.dest)}</div></div>
+    <div class="rbtns">
+      <button class="iconbtn" data-act="up" title="Move up" ${i === 0 ? "disabled" : ""}>${ico("up")}</button>
+      <button class="iconbtn" data-act="down" title="Move down" ${i === state.rules.length - 1 ? "disabled" : ""}>${ico("down")}</button>
+      <button class="iconbtn" data-act="edit" title="Edit">${ico("edit")}</button>
+      <button class="iconbtn" data-act="del" title="Delete">${ico("trash")}</button></div></div>`).join("");
+}
+$("#rules-list").addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const i = +b.closest(".rule").dataset.i, a = b.dataset.act, rules = state.rules;
+  if (a === "toggle") { rules[i].enabled = b.checked; await saveRules(); renderRules(); }
+  else if (a === "up" && i > 0) { [rules[i - 1], rules[i]] = [rules[i], rules[i - 1]]; await saveRules(); renderRules(); }
+  else if (a === "down" && i < rules.length - 1) { [rules[i + 1], rules[i]] = [rules[i], rules[i + 1]]; await saveRules(); renderRules(); }
+  else if (a === "edit") editRule(i);
+  else if (a === "del" && await confirmBox("Delete rule?", `Delete <b>${esc(rules[i].name)}</b>?`, "Delete", "danger")) { rules.splice(i, 1); await saveRules(); renderRules(); }
+});
+$("#b-newrule").onclick = () => editRule(-1);
+function editRule(i) {
+  const r = i >= 0 ? { ...state.rules[i] } : { name: "", enabled: true, ext: "", name_contains: "", name_regex: "", content_contains: "", min_mb: "", max_mb: "", older_days: "", newer_days: "", dest: "{type}/{year}" };
+  const f = (id, label, ph = "", type = "text", full = false) => `<div class="field ${full ? "full" : ""}"><label>${label}</label><input type="${type}" id="rf-${id}" value="${esc(r[id] ?? "")}" placeholder="${esc(ph)}"></div>`;
+  const ov = modal({
+    title: i >= 0 ? "Edit rule" : "New rule",
+    html: `<div class="hint" style="margin-bottom:12px">A file matches when <b>all</b> filled-in conditions are true.</div><div class="form">
+      ${f("name", "Rule name", "e.g. Invoices", "text", true)}
+      ${f("ext", "File types", "pdf, docx")}${f("name_contains", "Name contains", "invoice, receipt")}
+      ${f("name_regex", "Name matches regex", "^IMG_\\d+")}${f("content_contains", "Text inside contains", "total, vat")}
+      ${f("min_mb", "Bigger than (MB)", "", "number")}${f("max_mb", "Smaller than (MB)", "", "number")}
+      ${f("older_days", "Older than (days)", "", "number")}${f("newer_days", "Newer than (days)", "", "number")}
+      ${f("dest", "Destination folder (inside the destination)", "Finance/{year}/{month}", "text", true)}</div>
+      <div class="tokens" id="tokens">${TOKENS.map(t => `<button type="button" data-t="${t}">{${t}}</button>`).join("")}</div>
+      <div class="example" id="rf-example"></div>`,
+    buttons: [{ label: "Cancel" }, {
+      label: "Save rule", cls: "primary", onClick: () => {
+        const v = id => $("#rf-" + id, ov).value.trim(), out = { ...r };
+        ["name", "ext", "name_contains", "name_regex", "content_contains", "min_mb", "max_mb", "older_days", "newer_days", "dest"].forEach(k => out[k] = v(k));
+        const hasCond = ["ext", "name_contains", "name_regex", "content_contains", "min_mb", "max_mb", "older_days", "newer_days"].some(k => out[k] !== "");
+        if (!out.name) { toast("Give the rule a name", "warn"); return false; }
+        if (!hasCond) { toast("Add at least one condition", "warn"); return false; }
+        if (!out.dest) { toast("Choose a destination folder", "warn"); return false; }
+        if (i >= 0) state.rules[i] = out; else state.rules.push(out);
+        saveRules().then(renderRules);
+      }
+    }]
+  });
+  const ex = () => { const d = $("#rf-dest", ov).value; $("#rf-example", ov).innerHTML = `Example: <code>${esc(d.replace(/\{(\w+)\}/g, (m, k) => SAMPLE[k] ?? "General"))}/Holiday_Photo.jpg</code>`; };
+  $("#rf-dest", ov).oninput = ex; ex();
+  $("#tokens", ov).onclick = e => { const t = e.target.closest("[data-t]"); if (!t) return; const inp = $("#rf-dest", ov); inp.value += "{" + t.dataset.t + "}"; inp.focus(); ex(); };
+}
+
+/* ---------- DUPLICATES page ---------- */
+function renderDupFolders() {
+  $("#dup-folders").innerHTML = state.dupFolders.length
+    ? state.dupFolders.map((f, i) => `<div class="fitem">${ico("folder")}<span class="grow">${esc(f)}</span><button class="iconbtn" data-i="${i}" title="Remove" style="width:30px;height:30px">${ico("x")}</button></div>`).join("")
+    : `<div class="hint">No folders yet. Add the folders you want to compare. Duplicates are found across all of them.</div>`;
+}
+$("#dup-folders").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (b) { state.dupFolders.splice(+b.dataset.i, 1); renderDupFolders(); } });
+async function addDupFolder(p) { if (p && !state.dupFolders.includes(p)) { state.dupFolders.push(p); renderDupFolders(); } }
+$("#b-dupadd").onclick = async () => { const r = await api.pick_folder("Add a folder to scan"); if (r.ok && r.data) addDupFolder(r.data); };
+$("#b-dupscan").onclick = () => scanDups();
+async function scanDups() {
+  if (!state.dupFolders.length) return toast("Add at least one folder first", "warn");
+  state.dupGroups = null; $("#dup-results").innerHTML = "";
+  await startJob("dups", () => api.start_dup_scan(state.dupFolders, $("#dup-rec").checked));
+}
+function initKeep() {
+  state.dupKeep = new Map();
+  (state.dupGroups || []).forEach((g, gi) => { const oldest = g.files.reduce((a, b) => a.mtime <= b.mtime ? a : b); state.dupKeep.set(gi, new Set([oldest.path])); });
+}
+function setKeepRule(rule) {
+  state.dupGroups.forEach((g, gi) => {
+    const pick = g.files.reduce((a, b) => rule === "oldest" ? (a.mtime <= b.mtime ? a : b) : rule === "newest" ? (a.mtime >= b.mtime ? a : b) : (a.path.length <= b.path.length ? a : b));
+    state.dupKeep.set(gi, new Set([pick.path]));
+  });
+  renderDupResults();
+}
+function extras() { const out = []; state.dupGroups.forEach((g, gi) => g.files.forEach(f => { if (!state.dupKeep.get(gi).has(f.path)) out.push({ ...f }); })); return out; }
+function renderDupResults() {
+  const gs = state.dupGroups, el = $("#dup-results");
+  if (!gs) return;
+  if (!gs.length) { el.innerHTML = `<div class="card empty">${ico("check")}<div><b>No duplicates found</b></div><div>Everything in those folders is unique.</div></div>`; return; }
+  const wasted = gs.reduce((a, g) => a + g.wasted, 0), shown = gs.slice(0, 150);
+  el.innerHTML = `<div class="card"><div class="chips"><div class="chip"><b>${gs.length}</b><span>Duplicate groups</span></div><div class="chip"><b>${fmtSize(wasted)}</b><span>Space wasted</span></div></div>
+    <div class="actions" style="margin:0 0 6px"><span class="hint">Tick the file to <b>keep</b> in each group. Keep:</span>
+      <button class="btn sm" data-k="oldest">Oldest</button><button class="btn sm" data-k="newest">Newest</button><button class="btn sm" data-k="short">Shortest path</button></div>
+    ${gs.length > shown.length ? `<div class="hint">Showing the ${shown.length} biggest groups of ${gs.length}.</div>` : ""}
+    <div id="groups">${shown.map((g, gi) => `<div class="group"><header><b>${g.files.length} identical files</b><span>${fmtSize(g.size)} each</span></header>
+      ${g.files.map(f => `<label class="frow"><input type="checkbox" data-g="${gi}" data-p="${esc(f.path)}" ${state.dupKeep.get(gi).has(f.path) ? "checked" : ""}><span class="p">${esc(f.path)}</span><span class="d">${new Date(f.mtime * 1000).toLocaleDateString()}</span></label>`).join("")}</div>`).join("")}</div>
+    <div class="sticky"><span id="dup-summary" class="grow"></span><button class="btn primary" id="b-quar">${ico("folder")}Move extras to quarantine</button></div></div>`;
+  $$("[data-k]", el).forEach(b => b.onclick = () => setKeepRule(b.dataset.k));
+  $("#groups", el).onchange = e => {
+    const cb = e.target, gi = +cb.dataset.g, set = state.dupKeep.get(gi);
+    if (cb.checked) set.add(cb.dataset.p); else { if (set.size <= 1) { cb.checked = true; return toast("Keep at least one file per group", "warn"); } set.delete(cb.dataset.p); }
+    updateDupSummary();
+  };
+  $("#b-quar").onclick = async () => {
+    const ex = extras(), base = state.dupFolders[0];
+    if (!ex.length) return toast("Nothing to move", "warn");
+    if (await confirmBox("Move duplicates?", `Move <b>${ex.length}</b> file(s) (${fmtSize(ex.reduce((a, f) => a + f.size, 0))}) into <b>${esc(base)}\\_Duplicates</b>?<br>Nothing is deleted and you can undo this from History.`, "Move"))
+      startJob("quarantine", () => api.start_quarantine(ex.map(f => f.path), base));
+  };
+  updateDupSummary();
+}
+function updateDupSummary() { const ex = extras(); $("#dup-summary").textContent = `${ex.length} extra file(s), ${fmtSize(ex.reduce((a, f) => a + f.size, 0))} to free`; $("#b-quar").disabled = !ex.length; }
+
+/* ---------- HISTORY page ---------- */
+async function loadHistory() {
+  const r = await api.history(); if (!r.ok) return toast(r.error, "err");
+  state.history = r.data; $("#b-hist").textContent = state.history.length;
+  const el = $("#history-list");
+  if (!state.history.length) { el.innerHTML = `<div class="empty">${ico("history")}<div><b>Nothing here yet</b></div><div>Your runs will appear here.</div></div>`; return; }
+  el.innerHTML = `<div class="tablewrap"><table><thead><tr><th>When</th><th>What</th><th>Files</th><th>Status</th><th></th></tr></thead><tbody>${state.history.map(h => {
+    const st = h.undone ? "undone" : h.status, can = !h.undone && h.done > 0;
+    return `<tr data-id="${esc(h.id)}"><td>${fmtDate(h.ts)}</td>
+      <td class="path"><b>${h.kind === "duplicates" ? "Duplicate cleanup" : (h.mode === "copy" ? "Copy" : "Move") + " · " + esc(h.strategy)}</b><small>${esc(h.source)} → ${esc(h.dest)}</small></td>
+      <td>${h.done}${h.errors ? ` <small>${h.errors} failed</small>` : ""}</td><td><span class="tag ${st}">${st}</span></td>
+      <td style="white-space:nowrap"><button class="btn sm" data-a="undo" ${can ? "" : "disabled"}>${ico("undo")}Undo</button>
+        <button class="btn sm" data-a="detail">Details</button><button class="btn sm" data-a="report" title="Export CSV">${ico("download")}</button>
+        <button class="btn sm danger" data-a="del" title="Remove from history">${ico("trash")}</button></td></tr>`;
+  }).join("")}</tbody></table></div>`;
+}
+$("#history-list").addEventListener("click", async e => {
+  const b = e.target.closest("[data-a]"); if (!b || b.disabled) return;
+  const id = b.closest("tr").dataset.id, h = state.history.find(x => x.id === id);
+  if (b.dataset.a === "undo") { if (await confirmBox("Undo this run?", `Put <b>${h.done}</b> file(s) back where they were?`, "Undo")) startJob("undo", () => api.start_undo(id)); }
+  else if (b.dataset.a === "report") { const r = await api.export_report(id); if (r.ok && r.data) toast(`Report saved (${r.data.rows} rows)`, "ok"); else if (!r.ok) toast(r.error, "err"); }
+  else if (b.dataset.a === "del") { if (await confirmBox("Remove from history?", "The files stay where they are, but this run can no longer be undone.", "Remove", "danger")) { await api.delete_run(id); loadHistory(); } }
+  else if (b.dataset.a === "detail") {
+    const r = await api.history_detail(id); if (!r.ok) return toast(r.error, "err");
+    modal({ title: "Run details", buttons: [{ label: "Close" }], html: `<div class="hint" style="margin-bottom:8px">${r.data.total} operation(s)${r.data.total > r.data.ops.length ? `, showing the first ${r.data.ops.length}` : ""}.</div>
+      <div class="tablewrap" style="max-height:360px"><table><tbody>${r.data.ops.map(o => `<tr><td class="path">${esc(o.src)}<small>→ ${esc(o.dest)}</small></td></tr>`).join("")}</tbody></table></div>` });
+  }
+});
+
+/* ---------- SETTINGS / ABOUT ---------- */
+function renderSettings() {
+  const s = state.settings;
+  $("#s-content").checked = !!s.enable_content_extraction; $("#s-exif").checked = !!s.enable_exif_dates;
+  $("#s-fname").checked = !!s.enable_filename_dates; $("#s-maxkb").value = s.max_content_scan_kb;
+  $("#deps").innerHTML = state.boot.deps.map(d => `<div class="dep"><i class="dot ${d.ok ? "" : "bad"}"></i><div><b>${esc(d.name)}</b><small>${d.ok ? "Available" : "Not available: " + esc(d.error)}</small></div></div>`).join("");
+  $("#datadir").textContent = "Settings, rules and history are stored in: " + state.boot.data_dir;
+}
+const saveSettings = debounce(() => {
+  const s = { enable_content_extraction: $("#s-content").checked, enable_exif_dates: $("#s-exif").checked, enable_filename_dates: $("#s-fname").checked, max_content_scan_kb: +$("#s-maxkb").value || 512 };
+  api.save_settings(s).then(r => { if (r.ok) { Object.assign(state.settings, r.data); toast("Settings saved", "ok"); } });
+}, 400);
+["#s-content", "#s-exif", "#s-fname", "#s-maxkb"].forEach(s => $(s).addEventListener("change", saveSettings));
+$("#b-datadir").onclick = () => api.open_data_dir();
+function renderAbout() {
+  const b = state.boot, l = b.license;
+  $("#about-kv").innerHTML = `<span>Version</span><div>${esc(b.version)}</div><span>License</span><div>${l.valid ? "Valid · order " + esc(l.order) : "Invalid: " + esc(l.reason)}</div>
+    <span>Support</span><div>${esc(b.support)}</div><span>Privacy</span><div>All processing is local. No data leaves your computer.</div>`;
+}
+
+/* ---------- drag & drop (path comes from Python; this only marks the target) ---------- */
+document.addEventListener("dragover", e => { e.preventDefault(); const z = e.target.closest("[data-drop]"); $$(".dropzone").forEach(x => x.classList.remove("drag")); if (z) z.classList.add("drag"); state.dropZone = z ? z.dataset.drop : (state.page === "dups" ? "dups" : "source"); });
+document.addEventListener("dragleave", e => { if (!e.relatedTarget) $$(".dropzone").forEach(x => x.classList.remove("drag")); });
+document.addEventListener("drop", e => { e.preventDefault(); $$(".dropzone").forEach(x => x.classList.remove("drag")); });
+NOR.sub("dropped", async d => {
+  const r = await api.resolve_folder(d.path); if (!r.ok || !r.data) return toast("That is not a folder", "warn");
+  if (state.page === "dups") return addDupFolder(r.data);
+  go("organize");
+  if (state.dropZone === "dest") $("#dst").value = r.data; else $("#src").value = r.data;
+  readOpts(); syncOpts(); saveOpts();
+});
+
+/* ---------- boot ---------- */
+async function refreshBadges() {
+  const r = await api.history(); if (r.ok) $("#b-hist").textContent = r.data.length;
+  $("#b-rules").textContent = state.rules.length;
+}
+function mockApi() {   // lets the UI be previewed in a normal browser
+  const ok = data => Promise.resolve({ ok: true, data }), later = (job, result, ms = 700) => setTimeout(() => {
+    NOR.emit("progress", { job, done: 5, total: 10, message: "Working…" }); setTimeout(() => NOR.emit("done", { job, ok: true, result }), ms);
+  }, 100);
+  const items = [["IMG_20240315.jpg", "Images/20240315_IMG.jpg", "ready", 2400000], ["report final.pdf", "Documents/20260101_report_final.pdf", "ready", 810000], ["copy of report.pdf", "", "duplicate", 810000], ["notes.txt", "Documents/20260101_notes.txt", "ready", 1200]].map((x, i) => ({ id: i, src: "C:\\Downloads\\" + x[0], src_name: x[0], rel: x[1], rule: "Strategy: type", note: x[2] === "duplicate" ? "Identical to report final.pdf" : "", status: x[2], size: x[3], dest: "" }));
+  return {
+    bootstrap: () => ok({ app: "Norynth File Organizer Pro", version: "2.0.0", license: { valid: true, order: "DEMO-001", reason: "" }, settings: { enable_content_extraction: true, enable_exif_dates: true, enable_filename_dates: true, max_content_scan_kb: 512, theme: "dark", last_options: {} }, rules: [{ id: "a", name: "Invoices", enabled: true, ext: "pdf", name_contains: "invoice", dest: "Finance/{year}/{month}" }], presets: [{ name: "Photos by Date", description: "Organize photos using EXIF date" }], deps: [{ name: "PyMuPDF", ok: true }, { name: "piexif", ok: false, error: "No module named piexif" }], data_dir: "C:\\Users\\demo\\AppData\\Roaming\\Norynth", support: "support@norynth.com" }),
+    save_settings: s => ok(s), save_rules: r => ok(r), pick_folder: () => ok("C:\\Users\\demo\\Downloads"), resolve_folder: p => ok(p), open_path: () => ok(null), open_data_dir: () => ok(null),
+    start_plan: () => { later("plan", { id: "p1", items, truncated: false, summary: { total: 4, ready: 3, duplicate: 1, inplace: 0, error: 0, size_ready: 3211200 }, options: {} }); return ok(null).then(() => ({ ok: true })); },
+    start_execute: () => { later("execute", { id: "r1", status: "completed", done: 3, errors: 0, skipped: 1, mode: "move", dest: "D:\\Sorted", error_sample: [] }); return Promise.resolve({ ok: true }); },
+    start_undo: () => { later("undo", { restored: 3, removed: 0, missing: 0, failed: 0, complete: true }); return Promise.resolve({ ok: true }); },
+    start_dup_scan: () => { later("dups", [{ size: 810000, wasted: 810000, files: [{ path: "C:\\Downloads\\report final.pdf", mtime: 1700000000, size: 810000 }, { path: "C:\\Downloads\\copy of report.pdf", mtime: 1710000000, size: 810000 }] }]); return Promise.resolve({ ok: true }); },
+    start_quarantine: () => { later("quarantine", { done: 1, errors: 0 }); return Promise.resolve({ ok: true }); },
+    cancel_job: () => ok(null), history: () => ok([{ id: "r1", kind: "organize", ts: Date.now() / 1000, status: "completed", undone: false, done: 3, errors: 0, mode: "move", strategy: "type", source: "C:\\Downloads", dest: "D:\\Sorted" }]),
+    history_detail: () => ok({ ops: [{ src: "C:\\a.txt", dest: "D:\\Sorted\\a.txt" }], total: 1 }), delete_run: () => ok(null), export_report: () => ok({ rows: 3 })
+  };
+}
+async function getApi() {
+  if (window.pywebview && window.pywebview.api) return window.pywebview.api;
+  await new Promise(res => { window.addEventListener("pywebviewready", res, { once: true }); setTimeout(res, 700); });
+  return (window.pywebview && window.pywebview.api) || mockApi();
+}
+(async function init() {
+  api = await getApi();
+  const r = await api.bootstrap();
+  if (!r.ok) { document.body.innerHTML = `<pre style="padding:30px;color:#ef5b5b">Failed to start: ${esc(r.error)}</pre>`; return; }
+  state.boot = r.data; state.settings = r.data.settings; state.rules = r.data.rules; state.presets = r.data.presets;
+  Object.assign(state.opts, r.data.settings.last_options || {});
+  state.opts.dest = state.opts.dest || ""; state.opts.source = state.opts.source || "";
+  applyTheme(state.settings.theme || "dark");
+  const l = r.data.license; $("#lic-dot").classList.toggle("bad", !l.valid);
+  $("#lic-title").textContent = l.valid ? "Licensed" : "Unlicensed"; $("#lic-sub").textContent = l.valid ? "Order " + l.order : l.reason;
+  buildTiles(); buildPresets(); syncOpts(); refreshBadges(); go("organize");
+})();
+</script>
+</body>
+</html>

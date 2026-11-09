@@ -1,0 +1,67 @@
+{
+  "presets": [
+    {
+      "name": "Invoices & Receipts",
+      "description": "Organize financial documents by date and vendor",
+      "patterns": [
+        {"type": "filename", "pattern": "(?i)(invoice|receipt|bill|statement)"},
+        {"type": "content", "keywords": ["invoice", "receipt", "total", "amount due", "vat", "tax"]}
+      ],
+      "destination_template": "Finance/Invoices/{date_year}/{date_month}",
+      "rename_template": "{date_yyyymmdd}_{keyword}_{vendor}.{ext}",
+      "strategy": "extracted-date"
+    },
+    {
+      "name": "Photos by Date",
+      "description": "Organize photos using EXIF date or filename date",
+      "patterns": [
+        {"type": "extension", "pattern": "(?i)(jpg|jpeg|png|heic|raw|cr2|nef|arw)"},
+        {"type": "exif", "field": "DateTimeOriginal"}
+      ],
+      "destination_template": "Photos/{date_year}/{date_month}-{date_day}",
+      "rename_template": "{date_yyyymmdd}_{time_hhmmss}_{original_name}.{ext}",
+      "strategy": "extracted-date"
+    },
+    {
+      "name": "Projects by Name",
+      "description": "Group files by project name found in filename or content",
+      "patterns": [
+        {"type": "filename", "pattern": "(?i)(project|proj)[-_\\s]([a-z0-9]+)"},
+        {"type": "content", "keywords": ["project", "milestone", "deliverable", "sprint"]}
+      ],
+      "destination_template": "Projects/{project_name}",
+      "rename_template": "{date_yyyymmdd}_{project_name}_{original_name}.{ext}",
+      "strategy": "content"
+    },
+    {
+      "name": "Documents by Type",
+      "description": "Classic file-type organization with smart naming",
+      "patterns": [
+        {"type": "extension", "pattern": "(?i)(pdf|docx?|txt|rtf|odt)"},
+        {"type": "extension", "pattern": "(?i)(xlsx?|csv|ods)"},
+        {"type": "extension", "pattern": "(?i)(pptx?|key|odp)"}
+      ],
+      "destination_template": "{category}",
+      "rename_template": "{date_yyyymmdd}_{category}_{original_name}.{ext}",
+      "strategy": "type"
+    },
+    {
+      "name": "Code & Scripts",
+      "description": "Organize source code by language and project",
+      "patterns": [
+        {"type": "extension", "pattern": "(?i)(py|js|ts|java|cpp|c|h|cs|php|rb|go|rs)"},
+        {"type": "content", "keywords": ["import", "package", "namespace", "function", "class"]}
+      ],
+      "destination_template": "Code/{language}/{project_name}",
+      "rename_template": "{original_name}.{ext}",
+      "strategy": "type"
+    }
+  ],
+  "settings": {
+    "enable_content_extraction": true,
+    "max_content_scan_kb": 512,
+    "enable_exif_dates": true,
+    "enable_filename_dates": true,
+    "default_strategy": "extracted-date"
+  }
+}
