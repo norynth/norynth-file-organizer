@@ -46,3 +46,7 @@ Thumbs.db
 PROJECT_STATUS.md
 SKILL.md
 Note_on_*
+
+# Private build tooling — lives in ~/norynth-products/file-organizer-docs/scripts/
+scripts/
+dev.sh
